@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Remon Commission Calculator</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;padding:1.2rem}
+.container{max-width:720px;margin:0 auto}
+.app-title{font-size:20px;font-weight:700;margin-bottom:2px}
+.app-sub{font-size:12px;color:#999;margin-bottom:1.5rem}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.section-title{font-size:11px;color:#888;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.four-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.ig label{font-size:13px;color:#555;display:block;margin-bottom:5px;font-weight:500}
+.ig input{width:100%;padding:9px 10px;font-size:15px;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit;direction:ltr;text-align:left}
+.ig input:focus{outline:none;border-color:rgba(0,0,0,0.4)}
+.ig input::placeholder{color:#ccc}
+.hint{font-size:11px;color:#aaa;margin-top:4px}
+.hint.red{color:#c0392b;font-weight:500}
+.divider{border:none;border-top:0.5px solid rgba(0,0,0,0.08);margin:1rem 0}
+.rate-row{display:flex;align-items:flex-end;gap:10px}
+.rate-row .ig{flex:1}
+.rate-btn{padding:9px 14px;font-size:14px;background:#f5f5f3;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;cursor:pointer}
+.rate-btn:hover{background:#e8e8e6}
+.rs{font-size:11px;margin-top:4px}
+.rs.live{color:#0F6E56}
+.rs.fail{color:#c0392b}
+.date-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.date-row label{font-size:13px;color:#555;white-space:nowrap;font-weight:500}
+.date-row input{flex:1;padding:9px 10px;font-size:14px;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#fff;color:#1a1a1a;direction:ltr}
+.deduct-box{background:#fff8f8;border:0.5px solid rgba(192,57,43,0.2);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.deduct-title{font-size:12px;font-weight:600;color:#c0392b;margin-bottom:10px}
+.deduct-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.deduct-grid .ig label{color:#c0392b}
+.btn-primary{width:100%;padding:11px;font-size:15px;font-weight:600;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer}
+.btn-primary:hover{background:#333}
+.btn-secondary{padding:9px 16px;font-size:13px;font-weight:500;background:#fff;color:#1a1a1a;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;cursor:pointer}
+.btn-export{padding:9px 16px;font-size:13px;font-weight:500;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-export:hover{background:#333}
+.btn-export.grn{background:#0F6E56}
+.btn-export.grn:hover{background:#0a5040}
+.err{font-size:13px;color:#c0392b;background:#fdf0ee;border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:none}
+.hidden{display:none}
+.step{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:10px;padding:1rem 1.1rem;margin-bottom:8px}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.step-num{width:22px;height:22px;border-radius:50%;background:#1a1a1a;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-size:13px;font-weight:600}
+.crow{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.06)}
+.crow:last-child{border-bottom:none}
+.clabel{color:#555}
+.cmath{color:#aaa;font-size:11px;margin:0 6px;flex:1;text-align:center;direction:ltr}
+.cresult{font-weight:600}
+.total-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:0.5px solid rgba(0,0,0,0.12)}
+.total-label{font-size:13px;font-weight:600}
+.total-val{font-size:18px;font-weight:700}
+.target-card{background:#f5f5f3;border-radius:10px;padding:1rem 1.1rem;margin-bottom:8px}
+.big-num{font-size:28px;font-weight:700;margin-bottom:4px}
+.bar-wrap{background:rgba(0,0,0,0.08);border-radius:99px;height:9px;margin:12px 0 6px;overflow:hidden}
+.bar{height:100%;border-radius:99px;transition:width .5s ease}
+.bar.above{background:#1D9E75}
+.bar.below{background:#BA7517}
+.tlabel{font-size:12px;color:#666;margin-bottom:12px}
+.tier-badge{font-size:13px;font-weight:600;padding:5px 12px;border-radius:8px;display:inline-block}
+.tier-high{background:#E1F5EE;color:#0F6E56}
+.tier-low{background:#FAEEDA;color:#854F0B}
+.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rc{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:8px;padding:10px 12px}
+.rc-label{font-size:11px;color:#888;margin-bottom:4px}
+.rc-val{font-size:16px;font-weight:600}
+.rc-val.big{font-size:20px;color:#1D9E75}
+.add-row{display:flex;gap:10px;margin-top:1rem}
+.log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.log-entry{background:#f5f5f3;border-radius:10px;padding:1rem;margin-bottom:8px}
+.log-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.log-date{font-size:13px;font-weight:600}
+.log-tier{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px}
+.log-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.lc{background:#fff;border-radius:6px;padding:6px 8px}
+.lc-lbl{font-size:10px;color:#aaa;margin-bottom:2px}
+.lc-val{font-size:12px;font-weight:600}
+.lc-val .red{color:#c0392b}
+.log-sum{font-size:12px;padding-top:8px;border-top:0.5px solid rgba(0,0,0,0.08);margin-bottom:10px}
+.log-sum-row{display:flex;justify-content:space-between;margin-bottom:3px}
+.log-actions{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+/* transfer toggle inside log entry */
+.t-toggle{display:flex;gap:6px}
+.t-btn{flex:1;padding:8px 10px;font-size:12px;font-weight:600;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);cursor:pointer;background:#fff;color:#888;transition:all .15s;text-align:center}
+.t-btn:hover{background:#f0f0ee}
+.t-btn.yes{background:#E1F5EE;color:#0F6E56;border-color:#0F6E56}
+.t-btn.no{background:#fdf0ee;color:#c0392b;border-color:#c0392b}
+.btn-del{font-size:12px;padding:5px 12px;background:#fff;color:#c0392b;border:0.5px solid rgba(192,57,43,0.3);border-radius:6px;cursor:pointer}
+.grand{background:#1a1a1a;color:#fff;border-radius:10px;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.grand-label{font-size:13px;color:rgba(255,255,255,.6)}
+.grand-val{font-size:22px;font-weight:700}
+.export-row{display:flex;gap:8px}
+@media(max-width:480px){
+  .two-col,.four-col,.three-col,.deduct-grid{grid-template-columns:1fr}
+  .log-grid{grid-template-columns:1fr 1fr}
+  .cmath{display:none}
+  .export-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="app-title">Remon Commission</div>
+<div class="app-sub">Daily Sales &amp; Commission Tracker</div>
+
+<div class="card">
+  <div class="date-row">
+    <label>تاريخ اليوم</label>
+    <input type="date" id="entryDate"/>
+  </div>
+
+  <div class="section-title">أسعار الصرف</div>
+  <div class="two-col">
+    <div>
+      <div class="rate-row" style="margin-bottom:4px">
+        <div class="ig"><label>EUR / EGP</label><input type="number" id="rEGP" placeholder="60.00" min="0" step="0.01"/></div>
+        <button class="rate-btn" onclick="fetchRate('EUR')" title="تحديث تلقائي">&#x1F504;</button>
+      </div>
+      <div class="rs" id="eurStatus"></div>
+    </div>
+    <div>
+      <div class="rate-row" style="margin-bottom:4px">
+        <div class="ig"><label>USD / EGP</label><input type="number" id="rUSD" placeholder="52.00" min="0" step="0.01"/></div>
+        <button class="rate-btn" onclick="fetchRate('USD')" title="تحديث تلقائي">&#x1F504;</button>
+      </div>
+      <div class="rs" id="usdStatus"></div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <div class="section-title">مبيعات اليوم</div>
+  <div class="four-col">
+    <div class="ig"><label>يورو نقدي</label><input type="number" id="sEUR" placeholder="0.00" min="0" step="0.01"/><div class="hint">EUR</div></div>
+    <div class="ig"><label>دولار</label><input type="number" id="sUSD" placeholder="0.00" min="0" step="0.01"/><div class="hint">USD</div></div>
+    <div class="ig"><label>جنيه كاش</label><input type="number" id="sEGP" placeholder="0.00" min="0" step="0.01"/><div class="hint">EGP</div></div>
+    <div class="ig"><label>فيزا EGP</label><input type="number" id="sVISA" placeholder="0.00" min="0" step="0.01"/><div class="hint red">خصم 2% رسوم تلقائي</div></div>
+  </div>
+
+  <hr class="divider"/>
+
+  <div class="deduct-box">
+    <div class="deduct-title">&#x1F534; خصم دائرة الحمراء &nbsp;<span style="font-size:10px;font-weight:400;color:#888">مبيعات مش بتاعتك</span></div>
+    <div class="deduct-grid">
+      <div class="ig"><label>خصم EUR</label><input type="number" id="dEUR" placeholder="0.00" min="0" step="0.01"/><div class="hint">EUR</div></div>
+      <div class="ig"><label>خصم USD</label><input type="number" id="dUSD" placeholder="0.00" min="0" step="0.01"/><div class="hint">USD</div></div>
+      <div class="ig"><label>خصم EGP كاش</label><input type="number" id="dEGP" placeholder="0.00" min="0" step="0.01"/><div class="hint">EGP</div></div>
+      <div class="ig"><label>خصم VISA EGP</label><input type="number" id="dVISA" placeholder="0.00" min="0" step="0.01"/><div class="hint">EGP</div></div>
+    </div>
+  </div>
+
+  <div class="err" id="errMsg">أدخل سعر EUR/EGP و USD/EGP أولاً</div>
+  <button class="btn-primary" onclick="calculate()">احسب العمولة &#x2190;</button>
+</div>
+
+<!-- RESULT -->
+<div id="resultSection" class="hidden">
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><div class="step-title">تحويل المبيعات ليورو (بعد الخصومات)</div></div>
+    <div id="convRows"></div>
+    <div class="total-row"><span class="total-label">الإجمالي الفعلي باليورو</span><span class="total-val" id="totalEUR">—</span></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><div class="step-title">تحديد نسبة العمولة</div></div>
+    <div class="target-card">
+      <div class="big-num" id="bigTotal">—</div>
+      <div class="bar-wrap"><div class="bar" id="targetBar" style="width:0%"></div></div>
+      <div class="tlabel" id="targetLabel"></div>
+      <span class="tier-badge" id="tierBadge"></span>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><div class="step-title">العمولة النهائية</div></div>
+    <div id="finalCalcRow" style="font-size:12px;color:#888;margin-bottom:12px;direction:ltr;text-align:left"></div>
+    <div class="three-col">
+      <div class="rc"><div class="rc-label">النسبة</div><div class="rc-val" id="rPct">—</div></div>
+      <div class="rc"><div class="rc-label">العمولة EUR</div><div class="rc-val" id="rCommEUR">—</div></div>
+      <div class="rc"><div class="rc-label">عمولتك EGP</div><div class="rc-val big" id="rCommEGP">—</div></div>
+    </div>
+  </div>
+  <div class="add-row">
+    <button class="btn-primary" style="flex:1" onclick="addToLog()">+ أضف للسجل</button>
+    <button class="btn-secondary" onclick="resetForm()">مسح</button>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="logSection" class="hidden card">
+  <div class="log-header">
+    <div class="section-title" style="margin:0">سجل الأيام</div>
+    <div class="export-row">
+      <button class="btn-export" onclick="generatePDF()">&#x1F4C4; PDF</button>
+      <button class="btn-export grn" onclick="generateImage()">&#x1F5BC; صورة</button>
+    </div>
+  </div>
+  <div id="logEntries"></div>
+  <div class="grand hidden" id="grandTotal">
+    <div>
+      <div class="grand-label">إجمالي العمولة الكلية</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4)" id="grandDays"></div>
+    </div>
+    <div class="grand-val" id="grandVal">—</div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+
+let currentCalc = null;
+let log = JSON.parse(localStorage.getItem('remon_log_v2') || '[]');
+
+function fmt(n,d){ return (isNaN(n)?0:n).toFixed(d!==undefined?d:2); }
+
+// ===== FETCH RATE =====
+async function fetchRate(currency) {
+  const sEl = document.getElementById(currency==='EUR'?'eurStatus':'usdStatus');
+  const iEl = document.getElementById(currency==='EUR'?'rEGP':'rUSD');
+  sEl.textContent = 'جاري التحديث...'; sEl.className='rs';
+  const apis = [
+    ()=>fetch('https://open.er-api.com/v6/latest/EGP').then(r=>r.json()).then(d=>currency==='EUR'?1/d.rates.EUR:1/d.rates.USD),
+    ()=>fetch('https://api.exchangerate-api.com/v4/latest/EGP').then(r=>r.json()).then(d=>currency==='EUR'?1/d.rates.EUR:1/d.rates.USD),
+    ()=>fetch('https://api.frankfurter.app/latest?base=EGP&symbols=EUR,USD').then(r=>r.json()).then(d=>currency==='EUR'?1/d.rates.EUR:1/d.rates.USD),
+  ];
+  for(const api of apis){
+    try{
+      const rate=await api();
+      if(!isNaN(rate)&&rate>0){
+        iEl.value=rate.toFixed(2);
+        sEl.textContent='تم التحديث - '+new Date().toLocaleTimeString('ar-EG');
+        sEl.className='rs live'; return;
+      }
+    }catch(e){}
+  }
+  sEl.textContent='تعذر التحديث - أدخله يدوي'; sEl.className='rs fail';
+}
+
+// ===== CALCULATE =====
+function calculate(){
+  const egpPerEur=parseFloat(document.getElementById('rEGP').value);
+  const egpPerUsd=parseFloat(document.getElementById('rUSD').value);
+  const err=document.getElementById('errMsg');
+  if(!egpPerEur||!egpPerUsd||egpPerEur<=0||egpPerUsd<=0){err.style.display='block';return;}
+  err.style.display='none';
+  const usdPerEur=egpPerEur/egpPerUsd;
+  const sEUR=parseFloat(document.getElementById('sEUR').value)||0;
+  const sUSD=parseFloat(document.getElementById('sUSD').value)||0;
+  const sEGP=parseFloat(document.getElementById('sEGP').value)||0;
+  const sVISA=parseFloat(document.getElementById('sVISA').value)||0;
+  const sVISAnet=sVISA*0.98;
+  const dEUR=parseFloat(document.getElementById('dEUR').value)||0;
+  const dUSD=parseFloat(document.getElementById('dUSD').value)||0;
+  const dEGP=parseFloat(document.getElementById('dEGP').value)||0;
+  const dVISA=parseFloat(document.getElementById('dVISA').value)||0;
+  const netEUR=Math.max(0,sEUR-dEUR);
+  const netUSD=Math.max(0,sUSD-dUSD);
+  const netEGP=Math.max(0,sEGP-dEGP);
+  const netVISA=Math.max(0,sVISAnet-dVISA);
+  const eEUR=netEUR;
+  const eUSD=netUSD/usdPerEur;
+  const eEGPall=(netEGP+netVISA)/egpPerEur;
+  const total=eEUR+eUSD+eEGPall;
+  const pct=total>=300?10:8;
+  const commEUR=total*pct/100;
+  const commEGP=commEUR*egpPerEur;
+
+  currentCalc={
+    date:document.getElementById('entryDate').value,
+    egpPerEur,egpPerUsd,usdPerEur,
+    sEUR,sUSD,sEGP,sVISA,sVISAnet,
+    dEUR,dUSD,dEGP,dVISA,
+    netEUR,netUSD,netEGP,netVISA,
+    eEUR,eUSD,eEGPall,total,
+    pct,commEUR,commEGP,
+    transferDone:false
+  };
+
+  const rows=[];
+  if(sEUR>0||dEUR>0) rows.push([`EUR: ${fmt(sEUR)}${dEUR>0?` - R${fmt(dEUR)}`:''}`,`= ${fmt(netEUR)} EUR`,`${fmt(eEUR)} EUR`]);
+  if(sUSD>0||dUSD>0) rows.push([`USD: ${fmt(sUSD)}${dUSD>0?` - R${fmt(dUSD)}`:''}`,`/ ${fmt(usdPerEur,4)}`,`${fmt(eUSD)} EUR`]);
+  if(sEGP>0||dEGP>0) rows.push([`EGP: ${fmt(sEGP)}${dEGP>0?` - R${fmt(dEGP)}`:''}`,`/ ${fmt(egpPerEur)}`,`${fmt(netEGP/egpPerEur)} EUR`]);
+  if(sVISA>0||dVISA>0) rows.push([`VISA: ${fmt(sVISA)}-2%=${fmt(sVISAnet)}${dVISA>0?` - R${fmt(dVISA)}`:''}`,`/ ${fmt(egpPerEur)}`,`${fmt(netVISA/egpPerEur)} EUR`]);
+
+  document.getElementById('convRows').innerHTML=rows.map(r=>
+    `<div class="crow"><span class="clabel">${r[0]}</span><span class="cmath">${r[1]}</span><span class="cresult">${r[2]}</span></div>`
+  ).join('');
+  document.getElementById('totalEUR').textContent=fmt(total)+' EUR';
+  document.getElementById('bigTotal').textContent=fmt(total)+' EUR';
+  const bar=document.getElementById('targetBar');
+  bar.style.width=Math.min(total/300*100,100).toFixed(1)+'%';
+  bar.className='bar '+(pct===10?'above':'below');
+  const diff=Math.abs(300-total).toFixed(2);
+  document.getElementById('targetLabel').textContent=pct===10?`وصلت الهدف! زيادة ${diff} EUR`:`متبقي ${diff} EUR للهدف`;
+  const badge=document.getElementById('tierBadge');
+  badge.textContent=pct===10?'نسبة العمولة 10%':'نسبة العمولة 8%';
+  badge.className='tier-badge '+(pct===10?'tier-high':'tier-low');
+  document.getElementById('rPct').textContent=pct+'%';
+  document.getElementById('rCommEUR').textContent=fmt(commEUR)+' EUR';
+  document.getElementById('rCommEGP').textContent=Math.round(commEGP).toLocaleString('ar-EG')+' EGP';
+  document.getElementById('finalCalcRow').textContent=`${fmt(total)} EUR x ${pct}% = ${fmt(commEUR)} EUR x ${fmt(egpPerEur)} = ${Math.round(commEGP)} EGP`;
+  const sec=document.getElementById('resultSection');
+  sec.style.display='block'; sec.className='';
+  sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ===== LOG =====
+function addToLog(){
+  if(!currentCalc) return;
+  log.push({...currentCalc,id:Date.now()});
+  save(); renderLog(); resetForm();
+  setTimeout(()=>document.getElementById('logSection').scrollIntoView({behavior:'smooth'}),100);
+}
+
+function toggleTransfer(id){
+  const entry=log.find(e=>e.id===id);
+  if(entry){ entry.transferDone=!entry.transferDone; save(); renderLog(); }
+}
+
+function removeFromLog(id){
+  log=log.filter(e=>e.id!==id); save(); renderLog();
+}
+
+function resetForm(){
+  ['sEUR','sUSD','sEGP','sVISA','dEUR','dUSD','dEGP','dVISA'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('resultSection').style.display='none';
+  currentCalc=null;
+}
+
+function save(){ localStorage.setItem('remon_log_v2',JSON.stringify(log)); }
+
+function fmtDate(d){
+  if(!d) return '—';
+  const[y,m,day]=d.split('-'); return `${day}/${m}/${y}`;
+}
+
+function renderLog(){
+  const sec=document.getElementById('logSection');
+  const container=document.getElementById('logEntries');
+  if(log.length===0){sec.style.display='none';return;}
+  sec.style.display='block'; sec.className='card';
+
+  container.innerHTML=log.map(e=>`
+    <div class="log-entry">
+      <div class="log-top">
+        <div class="log-date">${fmtDate(e.date)}</div>
+        <span class="log-tier ${e.pct===10?'tier-high':'tier-low'}">${e.pct}%</span>
+      </div>
+      <div class="log-grid">
+        <div class="lc"><div class="lc-lbl">EUR</div><div class="lc-val">${e.sEUR>0?fmt(e.sEUR):'—'}${e.dEUR>0?`<span class="red"> -${fmt(e.dEUR)}</span>`:''}</div></div>
+        <div class="lc"><div class="lc-lbl">USD</div><div class="lc-val">${e.sUSD>0?fmt(e.sUSD):'—'}${e.dUSD>0?`<span class="red"> -${fmt(e.dUSD)}</span>`:''}</div></div>
+        <div class="lc"><div class="lc-lbl">EGP كاش</div><div class="lc-val">${e.sEGP>0?fmt(e.sEGP):'—'}${e.dEGP>0?`<span class="red"> -${fmt(e.dEGP)}</span>`:''}</div></div>
+        <div class="lc"><div class="lc-lbl">VISA (-2%)</div><div class="lc-val">${e.sVISA>0?fmt(e.sVISAnet):'—'}${e.dVISA>0?`<span class="red"> -${fmt(e.dVISA)}</span>`:''}</div></div>
+      </div>
+      <div class="log-sum">
+        <div class="log-sum-row"><span>إجمالي:</span><span>${fmt(e.total)} EUR</span></div>
+        <div class="log-sum-row"><span>السعر:</span><span>${fmt(e.egpPerEur)} EGP/EUR | ${fmt(e.egpPerUsd)} EGP/USD</span></div>
+        <div class="log-sum-row"><span>العمولة (${e.pct}%):</span><span>${fmt(e.commEUR)} EUR</span></div>
+        <div class="log-sum-row"><span>عمولتك:</span><span style="color:#1D9E75;font-size:15px;font-weight:700">${Math.round(e.commEGP).toLocaleString('ar-EG')} EGP</span></div>
+      </div>
+      <div class="t-toggle">
+        <button class="t-btn ${e.transferDone?'yes':''}" onclick="toggleTransfer(${e.id})">
+          ${e.transferDone?'&#x2705; تم التحويل يامحترم':'&#x2705; تم التحويل يامحترم'}
+        </button>
+        <button class="t-btn ${!e.transferDone?'no':''}" onclick="toggleTransfer(${e.id})">
+          ${!e.transferDone?'&#x23F3; ليس بعد يامحترم':'&#x23F3; ليس بعد يامحترم'}
+        </button>
+      </div>
+      <div class="log-actions">
+        <span style="font-size:11px;color:#aaa">ID: ${fmtDate(e.date)}</span>
+        <button class="btn-del" onclick="removeFromLog(${e.id})">حذف</button>
+      </div>
+    </div>
+  `).join('');
+
+  const totalEGP=log.reduce((s,e)=>s+e.commEGP,0);
+  const grand=document.getElementById('grandTotal');
+  grand.style.display='flex'; grand.className='grand';
+  document.getElementById('grandVal').textContent=Math.round(totalEGP).toLocaleString('ar-EG')+' EGP';
+  document.getElementById('grandDays').textContent=`${log.length} ${log.length===1?'يوم':'أيام'}`;
+}
+
+// ===== PDF =====
+function generatePDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const W=doc.internal.pageSize.getWidth();
+  let y=15;
+  doc.setFillColor(26,26,26); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('Remon Commission Report',W/2,11,{align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}  |  Days: ${log.length}`,W/2,20,{align:'center'});
+  y=36;
+  const totalEGP=log.reduce((s,e)=>s+e.commEGP,0);
+  const totalEUR=log.reduce((s,e)=>s+e.commEUR,0);
+  doc.setFillColor(245,245,243); doc.roundedRect(10,y,W-20,20,3,3,'F');
+  doc.setTextColor(26,26,26); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('Total Commission:',14,y+8);
+  doc.setFontSize(14); doc.text(`${Math.round(totalEGP).toLocaleString('en')} EGP`,14,y+16);
+  doc.setFontSize(10); doc.text(`EUR: ${fmt(totalEUR)}`,W-14,y+12,{align:'right'});
+  y+=28;
+  const head=[['Date','EUR','USD','EGP Cash','VISA(net)','Red Circle','Total EUR','Rate','%','Comm EUR','Comm EGP','Transfer']];
+  const body=log.map(e=>[
+    fmtDate(e.date),
+    e.sEUR>0?fmt(e.sEUR):'—',
+    e.sUSD>0?fmt(e.sUSD):'—',
+    e.sEGP>0?fmt(e.sEGP):'—',
+    e.sVISA>0?fmt(e.sVISAnet):'—',
+    (e.dEUR+e.dUSD+e.dEGP+e.dVISA)>0?`E:${fmt(e.dEUR)} U:${fmt(e.dUSD)} G:${fmt(e.dEGP+e.dVISA)}`:'—',
+    fmt(e.total), fmt(e.egpPerEur), e.pct+'%',
+    fmt(e.commEUR), Math.round(e.commEGP).toLocaleString('en'),
+    e.transferDone?'Done':'Pending'
+  ]);
+  body.push(['TOTAL','','','','','',fmt(log.reduce((s,e)=>s+e.total,0)),'','',fmt(totalEUR),Math.round(totalEGP).toLocaleString('en'),'']);
+  doc.autoTable({
+    startY:y,head,body,theme:'grid',
+    headStyles:{fillColor:[26,26,26],textColor:255,fontSize:7,fontStyle:'bold',halign:'center'},
+    bodyStyles:{fontSize:7,halign:'center'},
+    didParseCell:function(data){
+      if(data.row.index===body.length-1){data.cell.styles.fillColor=[245,245,243];data.cell.styles.fontStyle='bold';}
+      if(data.row.index<log.length){
+        const e=log[data.row.index];
+        if(data.column.index===8){data.cell.styles.textColor=e.pct===10?[15,110,86]:[133,79,11];data.cell.styles.fontStyle='bold';}
+        if(data.column.index===10){data.cell.styles.textColor=[15,110,86];data.cell.styles.fontStyle='bold';}
+        if(data.column.index===11){data.cell.styles.textColor=e.transferDone?[15,110,86]:[192,57,43];}
+      }
+    },
+    margin:{left:10,right:10}
+  });
+  const fy=doc.lastAutoTable.finalY+8;
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text('Rule: < 300 EUR = 8% | >= 300 EUR = 10%  |  VISA: auto -2% fee',W/2,fy,{align:'center'});
+  doc.save(`remon-commission-${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// ===== IMAGE =====
+async function generateImage(){
+  const el=document.getElementById('logSection');
+  try{
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#f5f5f3',useCORS:true});
+    const link=document.createElement('a');
+    link.download=`remon-commission-${new Date().toISOString().split('T')[0]}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(e){alert('تعذر توليد الصورة');}
+}
+
+renderLog();
+</script>
+</body>
+</html>
